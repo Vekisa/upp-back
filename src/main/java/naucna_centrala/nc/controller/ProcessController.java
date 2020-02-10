@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,10 +58,19 @@ public class ProcessController {
     @Autowired
     private MagazineRequestRepository magazineRequestRepository;
 
+    /*for(FormField formField : formFields) {
+        if(formField.getId().equals("scienceField")) {
+            HashMap<String, String> enumValues = (HashMap<String, String>) formField.getType()
+                    .getInformation("values");
+            enumValues.clear();
+            for(String field : scienceFields) {
+                enumValues.put(field, field);
+            }
+        }
+    }*/
+
     @GetMapping(path = "/auth", produces = "application/json")
     public @ResponseBody ResponseEntity<?> auth() {
-
-        System.out.println("USO U AUTH");
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -68,6 +78,17 @@ public class ProcessController {
     public @ResponseBody ResponseEntity<List<String>> groups() {
         System.out.println("USO U GROUPS");
         return new ResponseEntity<>(identityService.getCurrentAuthentication().getGroupIds(),HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/magazines", produces = "application/json")
+    public @ResponseBody ResponseEntity<List<Magazine>> magazines() {
+        return new ResponseEntity<>(magazineRepository.findAll(),HttpStatus.OK);
+    }
+
+    @PostMapping(path= "/odabir_casopisa/{taskId}", consumes = "application/json")
+    public @ResponseBody ResponseEntity<List<Magazine>> odabirCasopisa(@RequestBody List<FormSubmissionDto> dto, @PathVariable String taskId) {
+        ispisiListu(dto);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping(path = "/get_magazine", produces = "application/json")
@@ -81,13 +102,59 @@ public class ProcessController {
         return new FormFieldsDto(task.getId(), pi.getId(), properties);
     }
 
+
+    @GetMapping(path = "/get_labor", produces = "application/json")
+    public @ResponseBody FormFieldsDto getLabor() {
+        ProcessInstance pi = runtimeService.startProcessInstanceByKey("new_labor");
+        Task task = taskService.createTaskQuery().processInstanceId(pi.getId()).list().get(0);
+        TaskFormData tfd = formService.getTaskFormData(task.getId());
+        List<FormField> properties = tfd.getFormFields();
+
+        return new FormFieldsDto(task.getId(), pi.getId(), properties);
+    }
+
+    @GetMapping(path = "/refresh_labor/{processId}", produces = "application/json")
+    public @ResponseBody FormFieldsDto refreshLabor(@PathVariable String processId) {
+        Task task = taskService.createTaskQuery().processInstanceId(processId).list().get(0);
+        TaskFormData tfd = formService.getTaskFormData(task.getId());
+        List<FormField> properties = tfd.getFormFields();
+        return new FormFieldsDto(task.getId(), processId, properties);
+    }
+
+    @PostMapping(path = "/post_labor/{taskId}", produces = "application/json")
+    public @ResponseBody ResponseEntity post(@RequestBody List<FormSubmissionDto> dto, @PathVariable String taskId) {
+        HashMap<String, Object> map = this.mapListToDto(dto);
+        System.out.println("Stiglo ovo: " + dto.size());
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        String processInstanceId = task.getProcessInstanceId();
+        runtimeService.setVariable(processInstanceId, "dto", dto);
+        //formService.submitTaskForm(taskId, map);
+        taskService.complete(task.getId());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/processes", produces = "application/json")
+    public @ResponseBody ResponseEntity post() {
+        String user = identityService.getCurrentAuthentication().getUserId();
+        List<Task> tasks = taskService.createTaskQuery().taskAssignee(user).list();
+        System.out.println("BROJ TASKOVA: " + tasks.size());
+        List<String> list = new ArrayList<>();
+        for(Task t : tasks)
+            list.add(t.getProcessInstanceId());
+        return new ResponseEntity<>(list,HttpStatus.OK);
+    }
+
     @PostMapping(path = "/post_magazine/{taskId}", produces = "application/json")
     public @ResponseBody ResponseEntity postMagazine(@RequestBody List<FormSubmissionDto> dto, @PathVariable String taskId) {
         HashMap<String, Object> map = this.mapListToDto(dto);
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         String processInstanceId = task.getProcessInstanceId();
         runtimeService.setVariable(processInstanceId, "magazineDTO", dto);
-        formService.submitTaskForm(taskId, map);
+        try {
+            formService.submitTaskForm(taskId, map);
+        }catch (Exception e){
+            return new ResponseEntity<>("Moras uneti obavezna polja!", HttpStatus.BAD_REQUEST);
+        }
         System.out.println(taskId + " " + task.getName());
         System.out.println("DOBIO CASOPIS");
         return new ResponseEntity<>(HttpStatus.OK);
@@ -266,5 +333,12 @@ public class ProcessController {
         return map;
     }
 
+    public void ispisiListu(List<FormSubmissionDto> list){
+        System.out.println("----------------");
+        for(FormSubmissionDto f : list)
+            System.out.println(f.getFieldId() + " : " + f.getFieldValue());
+
+        System.out.println("----------------");
+    }
 
 }

@@ -18,8 +18,12 @@ public class ScientificArea {
     @ManyToMany(mappedBy = "scientificAreaList")
     private List<Magazine> magazineList;
 
+    @OneToMany(mappedBy = "scientificArea")
+    private List<Labor> labors;
+
     public ScientificArea() {
         magazineList = new ArrayList<>();
+        labors = new ArrayList<>();
     }
 
     public Long getId() {
@@ -44,5 +48,13 @@ public class ScientificArea {
 
     public void setMagazineList(List<Magazine> magazineList) {
         this.magazineList = magazineList;
+    }
+
+    public List<Labor> getLabors() {
+        return labors;
+    }
+
+    public void setLabors(List<Labor> labors) {
+        this.labors = labors;
     }
 }

@@ -1,6 +1,8 @@
 package naucna_centrala.nc;
 
 import naucna_centrala.nc.model.CustomUser;
+import naucna_centrala.nc.model.Magazine;
+import naucna_centrala.nc.repositories.MagazineRepository;
 import naucna_centrala.nc.service.UserService;
 import org.camunda.bpm.engine.IdentityService;
 import org.camunda.bpm.engine.authorization.*;
@@ -22,6 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import javax.servlet.Filter;
+import java.util.Optional;
 
 @Configuration
 @SpringBootApplication
@@ -36,9 +39,17 @@ public class NcApplication {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private MagazineRepository magazineRepository;
+
 	public static void main(String[] args) {
 		SpringApplication.run(NcApplication.class, args);
 	}
+
+	//INSERT INTO `nc`.`magazine_ima_clanarinu` (`clanarina_id`, `ima_clanarinu_id`) VALUES ('1', '7');
+
+	//UPDATE `nc`.`magazine` SET `glavni_urednik_id` = '1' WHERE (`id` = '1');
+	//UPDATE `nc`.`custom_user` SET `email` = 'vmosorinski@gmail.com' WHERE (`id` = '1');
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void init(){
@@ -51,6 +62,14 @@ public class NcApplication {
 		Group g2 = identityService.newGroup("editor");
 		g2.setType(Groups.GROUP_TYPE_WORKFLOW);
 		identityService.saveGroup(g2);
+
+		User author1 = identityService.newUser("author1");
+		author1.setPassword("author1");
+		identityService.saveUser(author1);
+
+		User author2 = identityService.newUser("author2");
+		author2.setPassword("author2");
+		identityService.saveUser(author2);
 
 		User userEditor = identityService.newUser("editor");
 		userEditor.setPassword("editor");
@@ -76,6 +95,8 @@ public class NcApplication {
 		userReviewer3.setPassword("reviewer3");
 		identityService.saveUser(userReviewer3);
 
+		identityService.createMembership("author1","author");
+		identityService.createMembership("author2","author");
 		identityService.createMembership("editor","editor");
 		identityService.createMembership("editor1","editor");
 		identityService.createMembership("editor2","editor");
@@ -125,21 +146,25 @@ public class NcApplication {
 		reviewer3.setKorisnicko_ime("reviewer3");
 		userService.save(reviewer3);
 
+		CustomUser author1u = new CustomUser();
+		author1u.setEnabled(true);
+		author1u.setIme("author1");
+		author1u.setPrezime("author1");
+		author1u.setKorisnicko_ime("author1");
+		userService.save(author1u);
 
-		Authorization authorization1 = authorizationService.createNewAuthorization(Authorization.AUTH_TYPE_GRANT);
-		authorization1.setGroupId("author");
-		authorization1.addPermission(Permissions.CREATE_INSTANCE);
-		authorization1.setResource(Resources.PROCESS_DEFINITION);
-		authorization1.setResourceId("*");
-		authorizationService.saveAuthorization(authorization1);
+		CustomUser author2u = new CustomUser();
+		author2u.setEnabled(true);
+		author2u.setIme("author2");
+		author2u.setPrezime("author2");
+		author2u.setKorisnicko_ime("author2");
+		userService.save(author2u);
 
-		Authorization authorization1Process = authorizationService.createNewAuthorization(Authorization.AUTH_TYPE_GRANT);
-		authorization1Process.setGroupId("author");
-		authorization1Process.addPermission(Permissions.CREATE);
-		authorization1Process.addPermission(Permissions.READ);
-		authorization1Process.addPermission(Permissions.UPDATE);
-		authorization1Process.setResource(Resources.PROCESS_INSTANCE);
-		authorizationService.saveAuthorization(authorization1Process);
+		/*Optional<Magazine> magazine = magazineRepository.findById((long) 1);
+		if(magazine.isPresent()){
+			author1u.getClanarina().add(magazine.get());
+			magazineRepository.save(magazine.get());
+		}*/
 
 		Authorization authorization2 = authorizationService.createNewAuthorization(Authorization.AUTH_TYPE_GRANT);
 		authorization2.setGroupId("reviewer");
@@ -169,6 +194,22 @@ public class NcApplication {
 		userEditorAuth1.setResourceId("*");
 		userEditorAuth1.addPermission(Permissions.ALL);
 		authorizationService.saveAuthorization(userEditorAuth1);
+
+		AuthorizationEntity authorA = new AuthorizationEntity(Authorization.AUTH_TYPE_GRANT);
+		authorA.setGroupId("author");
+		authorA.addPermission(Permissions.CREATE_INSTANCE);
+		authorA.setResource(Resources.PROCESS_DEFINITION);
+		authorA.setResourceId("*");
+		authorizationService.saveAuthorization(authorA);
+
+		AuthorizationEntity authorA2 = new AuthorizationEntity(Authorization.AUTH_TYPE_GRANT);
+		authorA2.setGroupId("author");
+		authorA2.setResource(Resources.PROCESS_INSTANCE);
+		authorA2.setResourceId("*");
+		authorA2.addPermission(Permissions.CREATE);
+		authorA2.addPermission(Permissions.READ);
+		authorA2.addPermission(Permissions.UPDATE);
+		authorizationService.saveAuthorization(authorA2);
 	}
 
 	@Bean

@@ -1,6 +1,7 @@
 package naucna_centrala.nc.model;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -32,14 +33,29 @@ public class CustomUser {
     private Boolean confirmed;
     @Column
     private Boolean enabled;
-
-    @Column
     @OneToMany(mappedBy = "glavni_urednik")
     private List<Magazine> magazineList;
 
+    @ManyToMany(mappedBy = "imaClanarinu")
+    private List<Magazine> clanarina;
+
+    @ManyToMany
+    private List<Labor> koautor;
+
     public CustomUser() {
+        clanarina = new ArrayList<>();
+        magazineList = new ArrayList<>();
+        koautor = new ArrayList<>();
         confirmed = false;
         enabled = false;
+    }
+
+    public List<Magazine> getClanarina() {
+        return clanarina;
+    }
+
+    public void setClanarina(List<Magazine> clanarina) {
+        this.clanarina = clanarina;
     }
 
     public String getIme() {
@@ -144,5 +160,13 @@ public class CustomUser {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public List<Labor> getKoautor() {
+        return koautor;
+    }
+
+    public void setKoautor(List<Labor> koautor) {
+        this.koautor = koautor;
     }
 }

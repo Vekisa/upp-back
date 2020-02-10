@@ -13,13 +13,10 @@ public class Magazine {
 
     @Column
     private String naziv;
-
     @Column
     private String issn;
-
     @Column
     private String nacin_placanja;
-
     @Column
     private String editor1;
     @Column
@@ -28,18 +25,23 @@ public class Magazine {
     private String reviewer1;
     @Column
     private String reviewer2;
-
+    @Column
+    private Boolean placaAutor;
     @Column
     private Boolean aktivan;
-
     @ManyToOne
     private CustomUser glavni_urednik;
-
+    @ManyToMany
+    private List<CustomUser> imaClanarinu;
     @ManyToMany
     private List<ScientificArea> scientificAreaList;
+    @OneToMany(mappedBy = "magazine")
+    private List<Labor> labors;
 
     public Magazine() {
+        imaClanarinu = new ArrayList<>();
         scientificAreaList = new ArrayList<>();
+        labors = new ArrayList<>();
     }
 
     public Long getId() {
@@ -128,5 +130,29 @@ public class Magazine {
 
     public void setAktivan(Boolean aktivan) {
         this.aktivan = aktivan;
+    }
+
+    public Boolean getPlacaAutor() {
+        return placaAutor;
+    }
+
+    public void setPlacaAutor(Boolean placaAutor) {
+        this.placaAutor = placaAutor;
+    }
+
+    public List<CustomUser> getImaClanarinu() {
+        return imaClanarinu;
+    }
+
+    public void setImaClanarinu(List<CustomUser> imaClanarinu) {
+        this.imaClanarinu = imaClanarinu;
+    }
+
+    public List<Labor> getLabors() {
+        return labors;
+    }
+
+    public void setLabors(List<Labor> labors) {
+        this.labors = labors;
     }
 }
