@@ -141,9 +141,9 @@
     <bpmn:userTask id="pregled2" name="Pregled2" camunda:assignee="${main_editor}">
       <bpmn:extensionElements>
         <camunda:formData>
-          <camunda:formField id="pdf" type="string" />
-          <camunda:formField id="komentar" type="string" />
-          <camunda:formField id="rok" type="date" />
+          <camunda:formField id="pdf" label="Pdf" type="string" />
+          <camunda:formField id="komentar" label="Komentar" type="string" />
+          <camunda:formField id="rok" label="Rok" type="date" />
           <camunda:formField id="dobar" label="Dobar" type="boolean" />
         </camunda:formData>
         <camunda:taskListener class="naucna_centrala.nc.listeners.Pregled2Create" event="create" />
