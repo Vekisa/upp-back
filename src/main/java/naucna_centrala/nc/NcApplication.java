@@ -1,20 +1,26 @@
 package naucna_centrala.nc;
 
 import naucna_centrala.nc.model.CustomUser;
-import naucna_centrala.nc.model.Magazine;
 import naucna_centrala.nc.repositories.MagazineRepository;
 import naucna_centrala.nc.service.UserService;
-import org.camunda.bpm.engine.IdentityService;
-import org.camunda.bpm.engine.authorization.*;
 import org.camunda.bpm.engine.AuthorizationService;
+import org.camunda.bpm.engine.IdentityService;
+import org.camunda.bpm.engine.authorization.Authorization;
+import org.camunda.bpm.engine.authorization.Groups;
+import org.camunda.bpm.engine.authorization.Permissions;
+import org.camunda.bpm.engine.authorization.Resources;
 import org.camunda.bpm.engine.identity.Group;
 import org.camunda.bpm.engine.identity.User;
 import org.camunda.bpm.engine.impl.persistence.entity.AuthorizationEntity;
 import org.camunda.bpm.engine.rest.security.auth.ProcessEngineAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchAutoConfiguration;
+import org.springframework.boot.autoconfigure.elasticsearch.rest.RestClientAutoConfiguration;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,10 +30,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import javax.servlet.Filter;
-import java.util.Optional;
 
 @Configuration
 @SpringBootApplication
+//@EnableAutoConfiguration(exclude={ElasticsearchAutoConfiguration.class, RestClientAutoConfiguration.class})
+@EnableConfigurationProperties
 public class NcApplication {
 
 	@Autowired
@@ -50,6 +57,7 @@ public class NcApplication {
 
 	//UPDATE `nc`.`magazine` SET `glavni_urednik_id` = '1' WHERE (`id` = '1');
 	//UPDATE `nc`.`custom_user` SET `email` = 'vmosorinski@gmail.com' WHERE (`id` = '1');
+
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void init(){

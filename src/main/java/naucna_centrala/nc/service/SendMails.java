@@ -30,6 +30,10 @@ public class SendMails implements JavaDelegate {
             CustomUser cu = magazine.getGlavni_urednik();
             if(cu != null){
                 String text = "E brate ovaj baja hoce da ti ubaci rad!";
+                System.out.println("USER: " + cu.getKorisnicko_ime());
+                if(cu.getEmail() == null) {
+                    System.out.println("EMAIL JE NUUUUUUUUUUULL");
+                }
                 emailSender.send(cu.getEmail(), text);
                 delegateExecution.setVariable("main_editor",magazine.getGlavni_urednik().getKorisnicko_ime());
             }else{

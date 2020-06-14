@@ -1,0 +1,22 @@
+{
+  "properties": {
+    "naziv_casopisa": {
+      "type": "keyword"
+    },
+    "naslov": {
+      "type": "keyword"
+    },
+    "puno_ime": {
+      "type": "keyword"
+    },
+    "kljucni_pojmovi": {
+      "type": "keyword"
+    },
+    "sadrzaj": {
+      "type": "text"
+    },
+    "naucna_kategorija": {
+      "type": "keyword"
+    }
+  }
+}
